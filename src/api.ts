@@ -1,6 +1,8 @@
 import type { Task, Win } from './types';
 
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api';
+// Same-origin `/api` works out of the box on Vercel (frontend + serverless API share a domain).
+// Local dev defaults to the standalone server/ process unless overridden via VITE_API_URL.
+const API_BASE = import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? 'http://localhost:4000/api' : '/api');
 
 interface ApiTask extends Omit<Task, 'id'> {
   taskId: string;

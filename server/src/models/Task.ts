@@ -32,6 +32,7 @@ const TaskSchema = new Schema<ITask>(
   { timestamps: true },
 );
 
-const Task: Model<ITask> = mongoose.models.Task ?? mongoose.model<ITask>('Task', TaskSchema);
+const Task: Model<ITask> =
+  mongoose.models.HackathonTask ?? mongoose.model<ITask>('HackathonTask', TaskSchema, 'hackathon_tasks');
 
 export default Task;

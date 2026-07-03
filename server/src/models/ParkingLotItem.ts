@@ -12,6 +12,7 @@ const ParkingLotItemSchema = new Schema<IParkingLotItem>(
 );
 
 const ParkingLotItem: Model<IParkingLotItem> =
-  mongoose.models.ParkingLotItem ?? mongoose.model<IParkingLotItem>('ParkingLotItem', ParkingLotItemSchema);
+  mongoose.models.HackathonParkingLotItem ??
+  mongoose.model<IParkingLotItem>('HackathonParkingLotItem', ParkingLotItemSchema, 'hackathon_parkinglotitems');
 
 export default ParkingLotItem;

@@ -13,6 +13,7 @@ const WinSchema = new Schema<IWin>(
   { timestamps: true },
 );
 
-const Win: Model<IWin> = mongoose.models.Win ?? mongoose.model<IWin>('Win', WinSchema);
+const Win: Model<IWin> =
+  mongoose.models.HackathonWin ?? mongoose.model<IWin>('HackathonWin', WinSchema, 'hackathon_wins');
 
 export default Win;

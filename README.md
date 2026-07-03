@@ -37,6 +37,40 @@ On first boot, the server seeds the initial task list and parking lot into Mongo
 collections are empty. There is no authentication on the API — it's intended for local/team
 use during the hackathon only.
 
+### Using a remote MongoDB
+
+`connectDB()` (`server/src/db.ts`) just passes `MONGO_URI` straight to Mongoose, so pointing
+at a remote database is a config change, not a code change.
+
+1. **Get your connection string.**
+   - Atlas:
+     ```
+     mongodb+srv://<username>:<password>@<cluster-name>.mongodb.net/hackathon-july?retryWrites=true&w=majority
+     ```
+   - Self-hosted remote server:
+     ```
+     mongodb://<username>:<password>@<host>:<port>/hackathon-july
+     ```
+
+2. **Set it in `server/.env`:**
+   ```bash
+   cd server
+   cp .env.example .env   # if you haven't already
+   ```
+   Edit `MONGO_URI` to the string above. Keep a database name (e.g. `hackathon-july`) at the
+   end of the path — that's the database the app reads/writes.
+
+3. **Network access** — for Atlas, allow-list your current IP (or `0.0.0.0/0` for hackathon
+   convenience) under Network Access in the Atlas dashboard, or the connection will hang/timeout.
+
+4. **Restart the backend** (`npm run dev`). It seeds the initial data into that remote DB on
+   first connect if the collections are empty, same as local.
+
+Notes:
+- `server/.env` is gitignored — it will hold credentials, so it's never committed.
+- If teammates each run their own `server/` pointed at the same remote `MONGO_URI`, everyone
+  shares one live board, which is usually what you want during the hackathon.
+
 ### API
 
 | Method | Route                    | Description              |
