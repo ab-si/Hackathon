@@ -31,6 +31,11 @@ export interface Win {
   time: number; // epoch ms
 }
 
+export interface ParkingItem {
+  id: string;
+  text: string;
+}
+
 export interface AppState {
   tasks: Task[];
   wins: Win[];

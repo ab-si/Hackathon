@@ -1,32 +1,56 @@
-# React + TypeScript + Vite
+# 14 Trees Hackathon Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A single-page dashboard for tracking a 12-hour hackathon in real time: countdown header,
+team member cards, an editable task board with one-click status actions, a milestone
+timeline, workload summary, a wins log, and a parking lot for postponed ideas.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Frontend: React + Vite + TypeScript + Material UI
+- Backend (optional): Express + Mongoose (MongoDB)
 
-## React Compiler
+The frontend works standalone with `localStorage` persistence. If the backend is running,
+it syncs to MongoDB instead — the header shows a **Live**/**Offline** chip indicating which
+mode is active.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Frontend
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev      # http://localhost:5173
+npm run build
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Optional: copy `.env.example` to `.env` and set `VITE_API_URL` if the backend runs on a
+non-default host/port (defaults to `http://localhost:4000/api`).
+
+## Backend (MongoDB persistence)
+
+```bash
+cd server
+npm install
+cp .env.example .env   # set MONGO_URI to your local/Atlas MongoDB instance
+npm run dev             # http://localhost:4000
+```
+
+On first boot, the server seeds the initial task list and parking lot into MongoDB if the
+collections are empty. There is no authentication on the API — it's intended for local/team
+use during the hackathon only.
+
+### API
+
+| Method | Route                    | Description              |
+| ------ | ------------------------ | ------------------------- |
+| GET    | `/api/tasks`              | List all tasks            |
+| PATCH  | `/api/tasks/:taskId`      | Update a task             |
+| GET    | `/api/wins`                | List wins, newest first   |
+| POST   | `/api/wins`                | Add a win                 |
+| GET    | `/api/parking-lot`         | List parking lot items    |
+| POST   | `/api/parking-lot`         | Add a parking lot item    |
+| DELETE | `/api/parking-lot/:id`     | Remove a parking lot item |
+
+## Keyboard shortcuts
+
+- `/` — focus task search
+- `N` — focus "add a win" input
+- `D` — toggle dark mode

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Box, Button, Container, CssBaseline, Paper, Stack, ThemeProvider } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -6,7 +6,16 @@ import confetti from 'canvas-confetti';
 import { getTheme } from './theme';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { INITIAL_PARKING_LOT, INITIAL_TASKS, MEMBERS, MILESTONES } from './data/initialData';
-import type { Task, Win } from './types';
+import type { ParkingItem, Task, Win } from './types';
+import {
+  apiDeleteParkingItem,
+  apiFetchParkingLot,
+  apiFetchTasks,
+  apiFetchWins,
+  apiPatchTask,
+  apiPostParkingItem,
+  apiPostWin,
+} from './api';
 import Header from './components/Header';
 import TeamMembers from './components/TeamMembers';
 import Timeline from './components/Timeline';
@@ -25,7 +34,22 @@ export default function App() {
   const [darkMode, setDarkMode] = useLocalStorage('hackathon-dark-mode', false);
   const [tasks, setTasks] = useLocalStorage<Task[]>('hackathon-tasks', INITIAL_TASKS);
   const [wins, setWins] = useLocalStorage<Win[]>('hackathon-wins', []);
-  const [parkingLot, setParkingLot] = useLocalStorage<string[]>('hackathon-parking-lot', INITIAL_PARKING_LOT);
+  const [parkingLot, setParkingLot] = useLocalStorage<ParkingItem[]>('hackathon-parking-lot', INITIAL_PARKING_LOT);
+  const [apiConnected, setApiConnected] = useState(false);
+
+  useEffect(() => {
+    Promise.all([apiFetchTasks(), apiFetchWins(), apiFetchParkingLot()])
+      .then(([apiTasks, apiWins, apiParkingLot]) => {
+        setTasks(apiTasks);
+        setWins(apiWins);
+        setParkingLot(apiParkingLot);
+        setApiConnected(true);
+      })
+      .catch(() => {
+        setApiConnected(false);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const theme = useMemo(() => getTheme(darkMode ? 'dark' : 'light'), [darkMode]);
 
@@ -43,29 +67,49 @@ export default function App() {
           return { ...t, ...patch };
         }),
       );
+      if (apiConnected) apiPatchTask(id, patch).catch(() => setApiConnected(false));
     },
-    [setTasks],
+    [setTasks, apiConnected],
   );
 
   const addWin = useCallback(
     (text: string) => {
-      setWins((prev) => [{ id: `w-${Date.now()}`, text, time: Date.now() }, ...prev]);
+      if (apiConnected) {
+        apiPostWin(text)
+          .then((win) => setWins((prev) => [win, ...prev]))
+          .catch(() => {
+            setApiConnected(false);
+            setWins((prev) => [{ id: `w-${Date.now()}`, text, time: Date.now() }, ...prev]);
+          });
+      } else {
+        setWins((prev) => [{ id: `w-${Date.now()}`, text, time: Date.now() }, ...prev]);
+      }
     },
-    [setWins],
+    [setWins, apiConnected],
   );
 
   const addParkingItem = useCallback(
     (text: string) => {
-      setParkingLot((prev) => [...prev, text]);
+      if (apiConnected) {
+        apiPostParkingItem(text)
+          .then((item) => setParkingLot((prev) => [...prev, item]))
+          .catch(() => {
+            setApiConnected(false);
+            setParkingLot((prev) => [...prev, { id: `local-${Date.now()}`, text }]);
+          });
+      } else {
+        setParkingLot((prev) => [...prev, { id: `local-${Date.now()}`, text }]);
+      }
     },
-    [setParkingLot],
+    [setParkingLot, apiConnected],
   );
 
   const removeParkingItem = useCallback(
-    (index: number) => {
-      setParkingLot((prev) => prev.filter((_, i) => i !== index));
+    (id: string) => {
+      setParkingLot((prev) => prev.filter((item) => item.id !== id));
+      if (apiConnected) apiDeleteParkingItem(id).catch(() => setApiConnected(false));
     },
-    [setParkingLot],
+    [setParkingLot, apiConnected],
   );
 
   const exportJson = useCallback(() => {
@@ -110,6 +154,7 @@ export default function App() {
         onToggleDarkMode={() => setDarkMode((p) => !p)}
         completedTasks={completedTasks}
         totalTasks={tasks.length}
+        apiConnected={apiConnected}
       />
 
       <Container maxWidth="xl" sx={{ py: 3 }}>

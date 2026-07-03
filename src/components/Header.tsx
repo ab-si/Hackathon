@@ -1,4 +1,4 @@
-import { Box, IconButton, LinearProgress, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Chip, IconButton, LinearProgress, Stack, Tooltip, Typography } from '@mui/material';
 import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
 import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
 import ParkIcon from '@mui/icons-material/Park';
@@ -24,9 +24,10 @@ interface Props {
   onToggleDarkMode: () => void;
   completedTasks: number;
   totalTasks: number;
+  apiConnected?: boolean;
 }
 
-export default function Header({ darkMode, onToggleDarkMode, completedTasks, totalTasks }: Props) {
+export default function Header({ darkMode, onToggleDarkMode, completedTasks, totalTasks, apiConnected }: Props) {
   const now = useNow();
   const start = eventBoundary(now, EVENT_START_HOUR);
   const end = eventBoundary(now, EVENT_END_HOUR);
@@ -76,6 +77,17 @@ export default function Header({ darkMode, onToggleDarkMode, completedTasks, tot
               {dateLabel} &middot; 11:00 AM &ndash; 11:00 PM
             </Typography>
           </Box>
+          {apiConnected !== undefined && (
+            <Tooltip title={apiConnected ? 'Synced with MongoDB' : 'Offline — using local storage'}>
+              <Chip
+                size="small"
+                label={apiConnected ? 'Live' : 'Offline'}
+                color={apiConnected ? 'success' : 'default'}
+                variant="outlined"
+                sx={{ fontWeight: 700 }}
+              />
+            </Tooltip>
+          )}
         </Stack>
 
         <Stack direction="row" spacing={3} alignItems="center">

@@ -3,11 +3,12 @@ import { Box, IconButton, InputAdornment, List, ListItem, ListItemText, Stack, T
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import LocalParkingIcon from '@mui/icons-material/LocalParking';
 import CloseIcon from '@mui/icons-material/Close';
+import type { ParkingItem } from '../types';
 
 interface Props {
-  items: string[];
+  items: ParkingItem[];
   onAdd: (text: string) => void;
-  onRemove: (index: number) => void;
+  onRemove: (id: string) => void;
 }
 
 export default function ParkingLot({ items, onAdd, onRemove }: Props) {
@@ -48,18 +49,18 @@ export default function ParkingLot({ items, onAdd, onRemove }: Props) {
         }}
       />
       <List dense sx={{ mt: 0.5, maxHeight: 220, overflowY: 'auto' }}>
-        {items.map((item, i) => (
+        {items.map((item) => (
           <ListItem
-            key={`${item}-${i}`}
+            key={item.id}
             disableGutters
             sx={{ py: 0.5 }}
             secondaryAction={
-              <IconButton size="small" onClick={() => onRemove(i)}>
+              <IconButton size="small" onClick={() => onRemove(item.id)}>
                 <CloseIcon fontSize="small" />
               </IconButton>
             }
           >
-            <ListItemText primary={item} primaryTypographyProps={{ fontSize: 14 }} />
+            <ListItemText primary={item.text} primaryTypographyProps={{ fontSize: 14 }} />
           </ListItem>
         ))}
       </List>
