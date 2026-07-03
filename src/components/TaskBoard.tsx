@@ -24,7 +24,7 @@ import RateReviewIcon from '@mui/icons-material/RateReview';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import BlockIcon from '@mui/icons-material/Block';
 import type { Member, Status, Task } from '../types';
-import { PRIORITY_COLORS, STATUS_COLORS, STATUS_ORDER } from '../statusMeta';
+import { isTaskOwner, PRIORITY_COLORS, STATUS_COLORS, STATUS_ORDER } from '../statusMeta';
 
 interface Props {
   tasks: Task[];
@@ -41,8 +41,7 @@ export default function TaskBoard({ tasks, members, onUpdateTask, searchInputRef
   const filtered = useMemo(() => {
     return tasks.filter((t) => {
       if (search && !t.title.toLowerCase().includes(search.toLowerCase())) return false;
-      if (ownerFilter !== 'All' && !t.owners.some((o) => o.toLowerCase().startsWith(ownerFilter.toLowerCase())))
-        return false;
+      if (ownerFilter !== 'All' && !isTaskOwner(t, ownerFilter)) return false;
       if (statusFilter !== 'All' && t.status !== statusFilter) return false;
       return true;
     });
@@ -96,7 +95,7 @@ export default function TaskBoard({ tasks, members, onUpdateTask, searchInputRef
         </Stack>
       </Stack>
 
-      <TableContainer sx={{ borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
+      <TableContainer sx={{ borderRadius: 1.25, border: '1px solid', borderColor: 'divider' }}>
         <Table size="small">
           <TableHead>
             <TableRow sx={{ '& th': { fontWeight: 700, color: 'text.secondary', bgcolor: 'action.hover' } }}>
@@ -119,9 +118,22 @@ export default function TaskBoard({ tasks, members, onUpdateTask, searchInputRef
                 </TableCell>
                 <TableCell>
                   <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
-                    {t.owners.map((o) => (
+                    {t.primaryOwner && (
+                      <Chip
+                        label={t.primaryOwner}
+                        size="small"
+                        color="primary"
+                        title="Primary owner"
+                      />
+                    )}
+                    {t.secondaryOwners.map((o) => (
                       <Chip key={o} label={o} size="small" variant="outlined" />
                     ))}
+                    {!t.primaryOwner && t.secondaryOwners.length === 0 && (
+                      <Typography variant="caption" color="text.secondary">
+                        Unassigned
+                      </Typography>
+                    )}
                   </Stack>
                 </TableCell>
                 <TableCell>

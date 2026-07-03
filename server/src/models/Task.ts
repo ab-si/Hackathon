@@ -7,7 +7,8 @@ export interface ITask {
   hackathonId: mongoose.Types.ObjectId;
   taskId: string;
   title: string;
-  owners: string[];
+  primaryOwner: string;
+  secondaryOwners: string[];
   priority: Priority;
   status: Status;
   progress: number;
@@ -20,7 +21,8 @@ const TaskSchema = new Schema<ITask>(
     hackathonId: { type: Schema.Types.ObjectId, required: true, index: true },
     taskId: { type: String, required: true, unique: true },
     title: { type: String, required: true, trim: true },
-    owners: { type: [String], default: [] },
+    primaryOwner: { type: String, default: '' },
+    secondaryOwners: { type: [String], default: [] },
     priority: { type: String, enum: ['High', 'Medium', 'Low'], default: 'Medium' },
     status: {
       type: String,

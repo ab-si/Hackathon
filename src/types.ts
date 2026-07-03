@@ -11,7 +11,8 @@ export interface Member {
 export interface Task {
   id: string;
   title: string;
-  owners: string[];
+  primaryOwner: string; // '' = unassigned
+  secondaryOwners: string[];
   priority: Priority;
   status: Status;
   progress: number;

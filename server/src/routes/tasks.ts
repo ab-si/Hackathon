@@ -15,7 +15,7 @@ router.get<HackathonParams>('/', async (req, res) => {
 
 router.post<HackathonParams>('/', async (req, res) => {
   const { hackathonId } = req.params;
-  const { title, owners, priority } = req.body;
+  const { title, primaryOwner, secondaryOwners, priority } = req.body;
   if (!title || typeof title !== 'string' || !title.trim()) {
     res.status(400).json({ error: 'title is required' });
     return;
@@ -25,7 +25,8 @@ router.post<HackathonParams>('/', async (req, res) => {
     hackathonId,
     taskId,
     title: title.trim(),
-    owners: Array.isArray(owners) ? owners : [],
+    primaryOwner: typeof primaryOwner === 'string' ? primaryOwner : '',
+    secondaryOwners: Array.isArray(secondaryOwners) ? secondaryOwners : [],
     priority: priority ?? 'Medium',
     status: 'Todo',
     progress: 0,
