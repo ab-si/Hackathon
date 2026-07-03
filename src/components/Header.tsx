@@ -1,15 +1,12 @@
 import { Box, Chip, IconButton, LinearProgress, Stack, Tooltip, Typography } from '@mui/material';
 import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
 import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EditIcon from '@mui/icons-material/Edit';
 import ParkIcon from '@mui/icons-material/Park';
 import { useNow } from '../hooks/useNow';
-import { EVENT_END_HOUR, EVENT_START_HOUR } from '../data/initialData';
-
-function eventBoundary(now: Date, hour: number) {
-  const d = new Date(now);
-  d.setHours(hour, 0, 0, 0);
-  return d;
-}
+import { formatHour, getEventBoundaries } from '../utils/hackathonStatus';
+import type { Hackathon } from '../types';
 
 function formatDuration(ms: number) {
   const total = Math.max(0, Math.floor(ms / 1000));
@@ -20,17 +17,28 @@ function formatDuration(ms: number) {
 }
 
 interface Props {
+  hackathon: Hackathon;
   darkMode: boolean;
   onToggleDarkMode: () => void;
   completedTasks: number;
   totalTasks: number;
   apiConnected?: boolean;
+  onBack: () => void;
+  onEdit: () => void;
 }
 
-export default function Header({ darkMode, onToggleDarkMode, completedTasks, totalTasks, apiConnected }: Props) {
+export default function Header({
+  hackathon,
+  darkMode,
+  onToggleDarkMode,
+  completedTasks,
+  totalTasks,
+  apiConnected,
+  onBack,
+  onEdit,
+}: Props) {
   const now = useNow();
-  const start = eventBoundary(now, EVENT_START_HOUR);
-  const end = eventBoundary(now, EVENT_END_HOUR);
+  const { start, end } = getEventBoundaries(hackathon.date, hackathon.startHour, hackathon.endHour);
 
   const totalMs = end.getTime() - start.getTime();
   const elapsedMs = now.getTime() - start.getTime();
@@ -41,7 +49,7 @@ export default function Header({ darkMode, onToggleDarkMode, completedTasks, tot
   const countdownLabel = notStarted ? 'Starts in' : finished ? 'Wrapped up' : 'Time remaining';
   const countdownMs = notStarted ? start.getTime() - now.getTime() : end.getTime() - now.getTime();
 
-  const dateLabel = now.toLocaleDateString(undefined, {
+  const dateLabel = start.toLocaleDateString(undefined, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
@@ -68,15 +76,25 @@ export default function Header({ darkMode, onToggleDarkMode, completedTasks, tot
         spacing={1.5}
       >
         <Stack direction="row" spacing={1.5} alignItems="center">
+          <Tooltip title="All hackathons">
+            <IconButton onClick={onBack} size="small">
+              <ArrowBackIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
           <ParkIcon sx={{ color: 'primary.main', fontSize: 28 }} />
           <Box>
             <Typography variant="h6" fontWeight={800} lineHeight={1.1}>
-              14 Trees Hackathon
+              {hackathon.name}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              {dateLabel} &middot; 11:00 AM &ndash; 11:00 PM
+              {dateLabel} &middot; {formatHour(hackathon.startHour)} &ndash; {formatHour(hackathon.endHour)}
             </Typography>
           </Box>
+          <Tooltip title="Edit hackathon">
+            <IconButton onClick={onEdit} size="small">
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
           {apiConnected !== undefined && (
             <Tooltip title={apiConnected ? 'Synced with MongoDB' : 'Offline — using local storage'}>
               <Chip

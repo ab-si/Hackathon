@@ -42,3 +42,25 @@ export interface AppState {
   parkingLot: string[];
   darkMode: boolean;
 }
+
+export interface Hackathon {
+  id: string;
+  name: string;
+  description: string;
+  date: string; // "YYYY-MM-DD"
+  startHour: number;
+  endHour: number;
+  participants: Member[];
+  milestones: Milestone[];
+}
+
+export interface HackathonSummary {
+  id: string;
+  name: string;
+  description: string;
+  date: string;
+  startHour: number;
+  endHour: number;
+  participantCount: number;
+  taskStats: { total: number; done: number };
+}

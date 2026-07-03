@@ -4,6 +4,7 @@ export type Priority = 'High' | 'Medium' | 'Low';
 export type Status = 'Todo' | 'In Progress' | 'Review' | 'Blocked' | 'Done';
 
 export interface ITask {
+  hackathonId: mongoose.Types.ObjectId;
   taskId: string;
   title: string;
   owners: string[];
@@ -16,6 +17,7 @@ export interface ITask {
 
 const TaskSchema = new Schema<ITask>(
   {
+    hackathonId: { type: Schema.Types.ObjectId, required: true, index: true },
     taskId: { type: String, required: true, unique: true },
     title: { type: String, required: true, trim: true },
     owners: { type: [String], default: [] },

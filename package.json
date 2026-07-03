@@ -20,7 +20,8 @@
     "express": "^4.21.1",
     "mongoose": "^9.5.0",
     "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react-dom": "^19.2.7",
+    "react-router-dom": "^7.18.1"
   },
   "devDependencies": {
     "@types/canvas-confetti": "^1.9.0",
