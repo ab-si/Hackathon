@@ -12,7 +12,7 @@ const STATUS_PRIORITY: Record<string, number> = {
 };
 
 function isPrimary(task: Task, memberName: string): boolean {
-  return task.primaryOwner.toLowerCase().startsWith(memberName.toLowerCase());
+  return (task.primaryOwner ?? '').toLowerCase().startsWith(memberName.toLowerCase());
 }
 
 function pickCurrentTask(tasks: Task[], memberName: string): Task | null {

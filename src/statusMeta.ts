@@ -29,7 +29,8 @@ export function timeAgo(ts: number, now: number = Date.now()) {
 export function isTaskOwner(task: Task, memberName: string): boolean {
   const name = memberName.toLowerCase();
   return (
-    task.primaryOwner.toLowerCase().startsWith(name) || task.secondaryOwners.some((o) => o.toLowerCase().startsWith(name))
+    (task.primaryOwner ?? '').toLowerCase().startsWith(name) ||
+    (task.secondaryOwners ?? []).some((o) => (o ?? '').toLowerCase().startsWith(name))
   );
 }
 

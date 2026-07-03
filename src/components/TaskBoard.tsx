@@ -126,10 +126,10 @@ export default function TaskBoard({ tasks, members, onUpdateTask, searchInputRef
                         title="Primary owner"
                       />
                     )}
-                    {t.secondaryOwners.map((o) => (
+                    {(t.secondaryOwners ?? []).map((o) => (
                       <Chip key={o} label={o} size="small" variant="outlined" />
                     ))}
-                    {!t.primaryOwner && t.secondaryOwners.length === 0 && (
+                    {!t.primaryOwner && (t.secondaryOwners ?? []).length === 0 && (
                       <Typography variant="caption" color="text.secondary">
                         Unassigned
                       </Typography>
