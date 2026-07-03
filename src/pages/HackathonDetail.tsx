@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   Box,
   Button,
+  Chip,
   Container,
   Dialog,
   DialogActions,
@@ -44,7 +45,7 @@ import HackathonFormDialog from '../components/hackathon/HackathonFormDialog';
 
 const cardSx = {
   p: { xs: 2, md: 2.5 },
-  borderRadius: 3.5,
+  borderRadius: 1.5,
   height: '100%',
 };
 
@@ -52,19 +53,21 @@ interface AddTaskDialogProps {
   open: boolean;
   participants: Hackathon['participants'];
   onClose: () => void;
-  onAdd: (data: { title: string; owners: string[]; priority: Priority }) => void;
+  onAdd: (data: { title: string; primaryOwner: string; secondaryOwners: string[]; priority: Priority }) => void;
 }
 
 function AddTaskDialog({ open, participants, onClose, onAdd }: AddTaskDialogProps) {
   const [title, setTitle] = useState('');
-  const [owner, setOwner] = useState('');
+  const [primaryOwner, setPrimaryOwner] = useState('');
+  const [secondaryOwners, setSecondaryOwners] = useState<string[]>([]);
   const [priority, setPriority] = useState<Priority>('Medium');
 
   const submit = () => {
     if (!title.trim()) return;
-    onAdd({ title: title.trim(), owners: owner ? [owner] : [], priority });
+    onAdd({ title: title.trim(), primaryOwner, secondaryOwners, priority });
     setTitle('');
-    setOwner('');
+    setPrimaryOwner('');
+    setSecondaryOwners([]);
     setPriority('Medium');
     onClose();
   };
@@ -81,13 +84,53 @@ function AddTaskDialog({ open, participants, onClose, onAdd }: AddTaskDialogProp
             autoFocus
             fullWidth
           />
-          <Select size="small" value={owner} onChange={(e) => setOwner(e.target.value)} displayEmpty>
-            <MenuItem value="">Unassigned</MenuItem>
+          <Select
+            size="small"
+            value={primaryOwner}
+            onChange={(e) => {
+              const value = e.target.value;
+              setPrimaryOwner(value);
+              setSecondaryOwners((prev) => prev.filter((o) => o !== value));
+            }}
+            displayEmpty
+          >
+            <MenuItem value="">Primary owner: Unassigned</MenuItem>
             {participants.map((p) => (
               <MenuItem key={p.id} value={p.name}>
-                {p.name}
+                Primary: {p.name}
               </MenuItem>
             ))}
+          </Select>
+          <Select
+            size="small"
+            multiple
+            value={secondaryOwners}
+            onChange={(e) => {
+              const value = e.target.value;
+              setSecondaryOwners(typeof value === 'string' ? value.split(',') : value);
+            }}
+            displayEmpty
+            renderValue={(selected) =>
+              selected.length === 0 ? (
+                <Typography variant="body2" color="text.secondary" component="span">
+                  Secondary owners
+                </Typography>
+              ) : (
+                <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+                  {selected.map((name) => (
+                    <Chip key={name} label={name} size="small" />
+                  ))}
+                </Stack>
+              )
+            }
+          >
+            {participants
+              .filter((p) => p.name !== primaryOwner)
+              .map((p) => (
+                <MenuItem key={p.id} value={p.name}>
+                  {p.name}
+                </MenuItem>
+              ))}
           </Select>
           <Select size="small" value={priority} onChange={(e) => setPriority(e.target.value as Priority)}>
             <MenuItem value="High">High</MenuItem>
@@ -166,7 +209,7 @@ export default function HackathonDetail({ darkMode, onToggleDarkMode }: Props) {
   );
 
   const addTask = useCallback(
-    (data: { title: string; owners: string[]; priority: Priority }) => {
+    (data: { title: string; primaryOwner: string; secondaryOwners: string[]; priority: Priority }) => {
       if (!hackathonId) return;
       if (apiConnected) {
         apiCreateTask(hackathonId, data)
@@ -178,7 +221,8 @@ export default function HackathonDetail({ darkMode, onToggleDarkMode }: Props) {
           {
             id: `local-${Date.now()}`,
             title: data.title,
-            owners: data.owners,
+            primaryOwner: data.primaryOwner,
+            secondaryOwners: data.secondaryOwners,
             priority: data.priority,
             status: 'Todo',
             progress: 0,

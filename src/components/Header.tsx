@@ -6,6 +6,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import ParkIcon from '@mui/icons-material/Park';
 import { useNow } from '../hooks/useNow';
 import { formatHour, getEventBoundaries } from '../utils/hackathonStatus';
+import { MONO_FONT } from '../theme';
 import type { Hackathon } from '../types';
 
 function formatDuration(ms: number) {
@@ -116,7 +117,7 @@ export default function Header({
             <Typography
               variant="body1"
               fontWeight={700}
-              sx={{ fontVariantNumeric: 'tabular-nums' }}
+              sx={{ fontVariantNumeric: 'tabular-nums', fontFamily: MONO_FONT }}
               color={finished ? 'text.secondary' : 'text.primary'}
             >
               {formatDuration(countdownMs)}

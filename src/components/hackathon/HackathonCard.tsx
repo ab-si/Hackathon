@@ -2,6 +2,7 @@ import { Box, Card, CardActionArea, Chip, LinearProgress, Stack, Typography } fr
 import GroupIcon from '@mui/icons-material/Group';
 import type { HackathonSummary } from '../../types';
 import { getHackathonStatus, STATUS_CHIP_COLORS, STATUS_LABELS } from '../../utils/hackathonStatus';
+import { MONO_FONT } from '../../theme';
 
 interface Props {
   hackathon: HackathonSummary;
@@ -20,7 +21,7 @@ export default function HackathonCard({ hackathon, onClick }: Props) {
   });
 
   return (
-    <Card variant="outlined" sx={{ borderRadius: 3.5, height: '100%' }}>
+    <Card variant="outlined" sx={{ borderRadius: 1.5, height: '100%' }}>
       <CardActionArea onClick={onClick} sx={{ height: '100%', p: 2.25, display: 'flex', alignItems: 'stretch' }}>
         <Stack spacing={1.25} sx={{ width: '100%' }}>
           <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={1}>
@@ -52,12 +53,12 @@ export default function HackathonCard({ hackathon, onClick }: Props) {
           )}
 
           <Stack direction="row" spacing={2} alignItems="center">
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="text.secondary" sx={{ fontFamily: MONO_FONT }}>
               {dateLabel}
             </Typography>
             <Stack direction="row" spacing={0.5} alignItems="center">
               <GroupIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" color="text.secondary" sx={{ fontFamily: MONO_FONT }}>
                 {hackathon.participantCount}
               </Typography>
             </Stack>
@@ -68,7 +69,7 @@ export default function HackathonCard({ hackathon, onClick }: Props) {
               <Typography variant="caption" color="text.secondary">
                 Progress
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" color="text.secondary" sx={{ fontFamily: MONO_FONT }}>
                 {total > 0 ? `${done}/${total} tasks` : 'No tasks yet'}
               </Typography>
             </Stack>

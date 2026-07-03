@@ -122,7 +122,7 @@ export async function apiFetchTasks(hackathonId: string): Promise<Task[]> {
 
 export async function apiCreateTask(
   hackathonId: string,
-  data: { title: string; owners?: string[]; priority?: Task['priority'] },
+  data: { title: string; primaryOwner?: string; secondaryOwners?: string[]; priority?: Task['priority'] },
 ): Promise<Task> {
   const res = await fetch(`${API_BASE}/hackathons/${hackathonId}/tasks`, {
     method: 'POST',

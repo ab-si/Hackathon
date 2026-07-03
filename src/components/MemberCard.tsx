@@ -1,6 +1,6 @@
 import { Avatar, Box, Card, LinearProgress, Stack, Typography } from '@mui/material';
 import type { Member, Task } from '../types';
-import { STATUS_COLORS, initials, timeAgo } from '../statusMeta';
+import { STATUS_COLORS, initials, isTaskOwner, timeAgo } from '../statusMeta';
 import { useNow } from '../hooks/useNow';
 
 const STATUS_PRIORITY: Record<string, number> = {
@@ -11,10 +11,18 @@ const STATUS_PRIORITY: Record<string, number> = {
   Done: 4,
 };
 
+function isPrimary(task: Task, memberName: string): boolean {
+  return task.primaryOwner.toLowerCase().startsWith(memberName.toLowerCase());
+}
+
 function pickCurrentTask(tasks: Task[], memberName: string): Task | null {
-  const owned = tasks.filter((t) => t.owners.some((o) => o.toLowerCase().startsWith(memberName.toLowerCase())));
+  const owned = tasks.filter((t) => isTaskOwner(t, memberName));
   if (owned.length === 0) return null;
-  return [...owned].sort((a, b) => STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status])[0];
+  return [...owned].sort((a, b) => {
+    const statusDiff = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status];
+    if (statusDiff !== 0) return statusDiff;
+    return Number(isPrimary(b, memberName)) - Number(isPrimary(a, memberName));
+  })[0];
 }
 
 interface Props {
@@ -36,7 +44,7 @@ export default function MemberCard({ member, tasks }: Props) {
         display: 'flex',
         flexDirection: 'column',
         gap: 1.25,
-        borderRadius: 3.5,
+        borderRadius: 1.5,
         height: '100%',
       }}
     >

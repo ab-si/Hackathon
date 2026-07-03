@@ -1,5 +1,6 @@
 import { Box, Stack, Typography } from '@mui/material';
 import type { Member, Task } from '../types';
+import { isTaskOwner } from '../statusMeta';
 
 interface Props {
   members: Member[];
@@ -8,7 +9,7 @@ interface Props {
 
 export default function TeamWorkload({ members, tasks }: Props) {
   const rows = members.map((m) => {
-    const owned = tasks.filter((t) => t.owners.some((o) => o.toLowerCase().startsWith(m.name.toLowerCase())));
+    const owned = tasks.filter((t) => isTaskOwner(t, m.name));
     const completed = owned.filter((t) => t.status === 'Done').length;
     const active = owned.filter((t) => t.status === 'In Progress' || t.status === 'Review').length;
     return { member: m, total: owned.length, completed, active };
