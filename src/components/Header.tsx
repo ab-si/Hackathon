@@ -3,11 +3,13 @@ import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
 import LightModeOutlinedIcon from '@mui/icons-material/LightModeOutlined';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
+import DashboardCustomizeOutlinedIcon from '@mui/icons-material/DashboardCustomizeOutlined';
 import ParkIcon from '@mui/icons-material/Park';
 import { useNow } from '../hooks/useNow';
 import { formatHour, getEventBoundaries } from '../utils/hackathonStatus';
 import { MONO_FONT } from '../theme';
 import type { Hackathon } from '../types';
+import ModeToggle from './ModeToggle';
 
 function formatDuration(ms: number) {
   const total = Math.max(0, Math.floor(ms / 1000));
@@ -26,6 +28,7 @@ interface Props {
   apiConnected?: boolean;
   onBack: () => void;
   onEdit: () => void;
+  onManageProjects: () => void;
 }
 
 export default function Header({
@@ -37,6 +40,7 @@ export default function Header({
   apiConnected,
   onBack,
   onEdit,
+  onManageProjects,
 }: Props) {
   const now = useNow();
   const { start, end } = getEventBoundaries(hackathon.date, hackathon.startHour, hackathon.endHour);
@@ -96,11 +100,16 @@ export default function Header({
               <EditIcon fontSize="small" />
             </IconButton>
           </Tooltip>
+          <Tooltip title="Manage projects (Presentation Mode data)">
+            <IconButton onClick={onManageProjects} size="small">
+              <DashboardCustomizeOutlinedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
           {apiConnected !== undefined && (
             <Tooltip title={apiConnected ? 'Synced with MongoDB' : 'Offline — using local storage'}>
               <Chip
                 size="small"
-                label={apiConnected ? 'Live' : 'Offline'}
+                label={apiConnected ? 'Synced' : 'Offline'}
                 color={apiConnected ? 'success' : 'default'}
                 variant="outlined"
                 sx={{ fontWeight: 700 }}
@@ -139,6 +148,8 @@ export default function Header({
               sx={{ height: 6, borderRadius: 3, mt: 0.5 }}
             />
           </Box>
+
+          <ModeToggle hackathonId={hackathon.id} mode="work" />
 
           <Tooltip title="Toggle dark mode (D)">
             <IconButton onClick={onToggleDarkMode} size="small">

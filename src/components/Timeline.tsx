@@ -1,6 +1,7 @@
 import { Box, Stack, Typography } from '@mui/material';
 import type { Milestone } from '../types';
 import { useNow } from '../hooks/useNow';
+import { getEventBoundaries } from '../utils/hackathonStatus';
 
 function toMinutes(time: string) {
   const [h, m] = time.split(':').map(Number);
@@ -8,15 +9,28 @@ function toMinutes(time: string) {
 }
 
 interface Props {
+  date: string;
+  endHour: number;
   milestones: Milestone[];
 }
 
-export default function Timeline({ milestones }: Props) {
+export default function Timeline({ date, endHour, milestones }: Props) {
   const now = useNow(30000);
-  const nowMinutes = now.getHours() * 60 + now.getMinutes();
 
   const sorted = [...milestones].sort((a, b) => toMinutes(a.time) - toMinutes(b.time));
-  const currentIndex = sorted.reduce((acc, m, i) => (toMinutes(m.time) <= nowMinutes ? i : acc), -1);
+
+  const { end } = getEventBoundaries(date, 0, endHour);
+  const eventFinished = now > end;
+
+  const milestoneDateTime = (time: string) => {
+    const [y, m, d] = date.split('-').map(Number);
+    const [hh, mm] = time.split(':').map(Number);
+    return new Date(y, m - 1, d, hh, mm, 0, 0);
+  };
+
+  const currentIndex = eventFinished
+    ? sorted.length
+    : sorted.reduce((acc, m, i) => (milestoneDateTime(m.time) <= now ? i : acc), -1);
 
   const format = (time: string) => {
     const [h, m] = time.split(':').map(Number);

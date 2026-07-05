@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Box,
@@ -20,20 +20,8 @@ import Grid from '@mui/material/Grid2';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DownloadIcon from '@mui/icons-material/Download';
 import AddIcon from '@mui/icons-material/Add';
-import confetti from 'canvas-confetti';
-import { useLocalStorage } from '../hooks/useLocalStorage';
-import type { Hackathon, ParkingItem, Priority, Task, Win } from '../types';
-import {
-  apiCreateTask,
-  apiDeleteParkingItem,
-  apiFetchHackathon,
-  apiFetchParkingLot,
-  apiFetchTasks,
-  apiFetchWins,
-  apiPatchTask,
-  apiPostParkingItem,
-  apiPostWin,
-} from '../api';
+import { useHackathonData } from '../hooks/useHackathonData';
+import type { Hackathon, Priority } from '../types';
 import Header from '../components/Header';
 import TeamMembers from '../components/TeamMembers';
 import Timeline from '../components/Timeline';
@@ -42,6 +30,7 @@ import TeamWorkload from '../components/TeamWorkload';
 import WinsToday from '../components/WinsToday';
 import ParkingLot from '../components/ParkingLot';
 import HackathonFormDialog from '../components/hackathon/HackathonFormDialog';
+import ManageProjectsDialog from '../components/hackathon/ManageProjectsDialog';
 
 const cardSx = {
   p: { xs: 2, md: 2.5 },
@@ -158,127 +147,32 @@ export default function HackathonDetail({ darkMode, onToggleDarkMode }: Props) {
   const { hackathonId } = useParams<{ hackathonId: string }>();
   const navigate = useNavigate();
 
-  const [hackathon, setHackathon] = useState<Hackathon | null>(null);
-  const [notFound, setNotFound] = useState(false);
-  const [apiConnected, setApiConnected] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [addTaskOpen, setAddTaskOpen] = useState(false);
+  const [manageProjectsOpen, setManageProjectsOpen] = useState(false);
 
-  const [tasks, setTasks] = useLocalStorage<Task[]>(`hackathon-${hackathonId}-tasks`, []);
-  const [wins, setWins] = useLocalStorage<Win[]>(`hackathon-${hackathonId}-wins`, []);
-  const [parkingLot, setParkingLot] = useLocalStorage<ParkingItem[]>(`hackathon-${hackathonId}-parking-lot`, []);
+  const {
+    hackathon,
+    setHackathon,
+    notFound,
+    apiConnected,
+    tasks,
+    wins,
+    parkingLot,
+    projects,
+    updateTask,
+    addTask,
+    addWin,
+    addParkingItem,
+    removeParkingItem,
+    saveProjects,
+  } = useHackathonData(hackathonId);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const winInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (!hackathonId) return;
-    setNotFound(false);
-    apiFetchHackathon(hackathonId)
-      .then((h) => {
-        setHackathon(h);
-        return Promise.all([apiFetchTasks(hackathonId), apiFetchWins(hackathonId), apiFetchParkingLot(hackathonId)]);
-      })
-      .then(([apiTasks, apiWins, apiParkingLot]) => {
-        setTasks(apiTasks);
-        setWins(apiWins);
-        setParkingLot(apiParkingLot);
-        setApiConnected(true);
-      })
-      .catch(() => {
-        setApiConnected(false);
-        setNotFound(true);
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hackathonId]);
-
-  const updateTask = useCallback(
-    (id: string, patch: Partial<Task>) => {
-      setTasks((prev) =>
-        prev.map((t) => {
-          if (t.id !== id) return t;
-          if (patch.status === 'Done' && t.status !== 'Done') {
-            confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
-          }
-          return { ...t, ...patch };
-        }),
-      );
-      if (apiConnected && hackathonId) apiPatchTask(hackathonId, id, patch).catch(() => setApiConnected(false));
-    },
-    [setTasks, apiConnected, hackathonId],
-  );
-
-  const addTask = useCallback(
-    (data: { title: string; primaryOwner: string; secondaryOwners: string[]; priority: Priority }) => {
-      if (!hackathonId) return;
-      if (apiConnected) {
-        apiCreateTask(hackathonId, data)
-          .then((task) => setTasks((prev) => [...prev, task]))
-          .catch(() => setApiConnected(false));
-      } else {
-        setTasks((prev) => [
-          ...prev,
-          {
-            id: `local-${Date.now()}`,
-            title: data.title,
-            primaryOwner: data.primaryOwner,
-            secondaryOwners: data.secondaryOwners,
-            priority: data.priority,
-            status: 'Todo',
-            progress: 0,
-            notes: '',
-            updatedAt: Date.now(),
-          },
-        ]);
-      }
-    },
-    [setTasks, apiConnected, hackathonId],
-  );
-
-  const addWin = useCallback(
-    (text: string) => {
-      if (!hackathonId) return;
-      if (apiConnected) {
-        apiPostWin(hackathonId, text)
-          .then((win) => setWins((prev) => [win, ...prev]))
-          .catch(() => {
-            setApiConnected(false);
-            setWins((prev) => [{ id: `w-${Date.now()}`, text, time: Date.now() }, ...prev]);
-          });
-      } else {
-        setWins((prev) => [{ id: `w-${Date.now()}`, text, time: Date.now() }, ...prev]);
-      }
-    },
-    [setWins, apiConnected, hackathonId],
-  );
-
-  const addParkingItem = useCallback(
-    (text: string) => {
-      if (!hackathonId) return;
-      if (apiConnected) {
-        apiPostParkingItem(hackathonId, text)
-          .then((item) => setParkingLot((prev) => [...prev, item]))
-          .catch(() => {
-            setApiConnected(false);
-            setParkingLot((prev) => [...prev, { id: `local-${Date.now()}`, text }]);
-          });
-      } else {
-        setParkingLot((prev) => [...prev, { id: `local-${Date.now()}`, text }]);
-      }
-    },
-    [setParkingLot, apiConnected, hackathonId],
-  );
-
-  const removeParkingItem = useCallback(
-    (id: string) => {
-      setParkingLot((prev) => prev.filter((item) => item.id !== id));
-      if (apiConnected && hackathonId) apiDeleteParkingItem(hackathonId, id).catch(() => setApiConnected(false));
-    },
-    [setParkingLot, apiConnected, hackathonId],
-  );
-
-  const exportJson = useCallback(() => {
-    const data = { hackathon, tasks, wins, parkingLot, exportedAt: new Date().toISOString() };
+  const exportJson = () => {
+    const data = { hackathon, tasks, wins, parkingLot, projects, exportedAt: new Date().toISOString() };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -286,7 +180,7 @@ export default function HackathonDetail({ darkMode, onToggleDarkMode }: Props) {
     a.download = `hackathon-board-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [hackathon, tasks, wins, parkingLot]);
+  };
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -346,6 +240,7 @@ export default function HackathonDetail({ darkMode, onToggleDarkMode }: Props) {
         apiConnected={apiConnected}
         onBack={() => navigate('/')}
         onEdit={() => setEditOpen(true)}
+        onManageProjects={() => setManageProjectsOpen(true)}
       />
 
       <Container maxWidth="xl" sx={{ py: 3 }}>
@@ -353,7 +248,7 @@ export default function HackathonDetail({ darkMode, onToggleDarkMode }: Props) {
           <TeamMembers members={hackathon.participants} tasks={tasks} />
 
           <Paper variant="outlined" sx={cardSx}>
-            <Timeline milestones={hackathon.milestones} />
+            <Timeline date={hackathon.date} endHour={hackathon.endHour} milestones={hackathon.milestones} />
           </Paper>
 
           <Paper variant="outlined" sx={cardSx}>
@@ -410,6 +305,17 @@ export default function HackathonDetail({ darkMode, onToggleDarkMode }: Props) {
         onSaved={(h) => {
           setHackathon(h);
           setEditOpen(false);
+        }}
+      />
+
+      <ManageProjectsDialog
+        open={manageProjectsOpen}
+        projects={projects}
+        tasks={tasks}
+        onClose={() => setManageProjectsOpen(false)}
+        onSave={async (next) => {
+          await saveProjects(next);
+          setManageProjectsOpen(false);
         }}
       />
     </>

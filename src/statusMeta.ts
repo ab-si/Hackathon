@@ -1,4 +1,4 @@
-import type { Priority, Status, Task } from './types';
+import type { Priority, ProjectStatus, Status, Task } from './types';
 
 export const STATUS_COLORS: Record<Status, string> = {
   Todo: '#9ca3af',
@@ -14,6 +14,20 @@ export const PRIORITY_COLORS: Record<Priority, string> = {
   High: '#f43f5e',
   Medium: '#f59e0b',
   Low: '#6b7280',
+};
+
+export const PROJECT_STATUS_COLORS: Record<ProjectStatus, string> = {
+  Planning: '#9ca3af',
+  'In Progress': '#6366f1',
+  'Demo Ready': '#f59e0b',
+  Done: '#10b981',
+};
+
+export const PROJECT_STATUS_CHIP_COLORS: Record<ProjectStatus, 'default' | 'primary' | 'warning' | 'success'> = {
+  Planning: 'default',
+  'In Progress': 'primary',
+  'Demo Ready': 'warning',
+  Done: 'success',
 };
 
 export function timeAgo(ts: number, now: number = Date.now()) {

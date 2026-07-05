@@ -10,6 +10,11 @@ export interface IMilestone {
   label: string;
 }
 
+export interface ISummaryStats {
+  commits?: number;
+  prs?: number;
+}
+
 export interface IHackathon {
   name: string;
   description: string;
@@ -18,6 +23,8 @@ export interface IHackathon {
   endHour: number; // 0-23
   participants: IParticipant[];
   milestones: IMilestone[];
+  keyLearnings: string[];
+  summaryStats: ISummaryStats;
 }
 
 const ParticipantSchema = new Schema<IParticipant>(
@@ -36,6 +43,14 @@ const MilestoneSchema = new Schema<IMilestone>(
   { _id: false },
 );
 
+const SummaryStatsSchema = new Schema<ISummaryStats>(
+  {
+    commits: { type: Number },
+    prs: { type: Number },
+  },
+  { _id: false },
+);
+
 const HackathonSchema = new Schema<IHackathon>(
   {
     name: { type: String, required: true, trim: true },
@@ -45,6 +60,8 @@ const HackathonSchema = new Schema<IHackathon>(
     endHour: { type: Number, required: true, min: 0, max: 23 },
     participants: { type: [ParticipantSchema], default: [] },
     milestones: { type: [MilestoneSchema], default: [] },
+    keyLearnings: { type: [String], default: [] },
+    summaryStats: { type: SummaryStatsSchema, default: () => ({}) },
   },
   { timestamps: true },
 );

@@ -44,6 +44,11 @@ export interface AppState {
   darkMode: boolean;
 }
 
+export interface SummaryStats {
+  commits?: number;
+  prs?: number;
+}
+
 export interface Hackathon {
   id: string;
   name: string;
@@ -53,6 +58,8 @@ export interface Hackathon {
   endHour: number;
   participants: Member[];
   milestones: Milestone[];
+  keyLearnings: string[];
+  summaryStats: SummaryStats;
 }
 
 export interface HackathonSummary {
@@ -64,4 +71,68 @@ export interface HackathonSummary {
   endHour: number;
   participantCount: number;
   taskStats: { total: number; done: number };
+}
+
+export type ProjectStatus = 'Planning' | 'In Progress' | 'Demo Ready' | 'Done';
+
+export interface ProjectLinks {
+  liveDemo?: string;
+  figma?: string;
+  hosted?: string;
+  github?: string;
+  dashboard?: string;
+  documentation?: string;
+}
+
+export interface ProjectArchitecture {
+  type: 'image' | 'markdown' | 'mermaid' | 'iframe';
+  content: string;
+}
+
+export interface ProjectHighlight {
+  title: string;
+  description?: string;
+}
+
+export interface ProjectImpact {
+  label: string;
+  value: string;
+  description?: string;
+}
+
+export interface ProjectTeamMember {
+  name: string;
+  role: string;
+  contribution?: string;
+}
+
+export type ProjectNextStepCategory = 'future' | 'upcoming' | 'limitation' | 'tech-debt';
+
+export interface ProjectNextStep {
+  title: string;
+  category?: ProjectNextStepCategory;
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  oneLiner: string;
+  problem: string;
+  solution: string;
+  duration?: string;
+  owner: string;
+  status: ProjectStatus;
+  progress: number;
+  demoReady: boolean;
+  links: ProjectLinks;
+  architecture?: ProjectArchitecture;
+  screenshots: string[];
+  highlights: ProjectHighlight[];
+  technicalHighlights: ProjectHighlight[];
+  challenges: ProjectHighlight[];
+  impact: ProjectImpact[];
+  nextSteps: ProjectNextStep[];
+  team: ProjectTeamMember[];
+  tags: string[];
+  speakerNotes?: string;
 }

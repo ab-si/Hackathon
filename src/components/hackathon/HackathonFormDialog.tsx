@@ -71,6 +71,8 @@ export default function HackathonFormDialog({ open, mode, initialValue, onClose,
         endHour: form.endHour,
         participants: form.participants,
         milestones: form.milestones,
+        keyLearnings: initialValue?.keyLearnings ?? [],
+        summaryStats: initialValue?.summaryStats ?? {},
       };
       const result =
         mode === 'edit' && initialValue
