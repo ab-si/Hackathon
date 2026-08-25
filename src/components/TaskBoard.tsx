@@ -23,6 +23,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import RateReviewIcon from '@mui/icons-material/RateReview';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import BlockIcon from '@mui/icons-material/Block';
+import EditIcon from '@mui/icons-material/Edit';
 import type { Member, Status, Task } from '../types';
 import { isTaskOwner, PRIORITY_COLORS, STATUS_COLORS, STATUS_ORDER } from '../statusMeta';
 
@@ -30,10 +31,11 @@ interface Props {
   tasks: Task[];
   members: Member[];
   onUpdateTask: (id: string, patch: Partial<Task>) => void;
+  onEditTask: (task: Task) => void;
   searchInputRef: React.RefObject<HTMLInputElement | null>;
 }
 
-export default function TaskBoard({ tasks, members, onUpdateTask, searchInputRef }: Props) {
+export default function TaskBoard({ tasks, members, onUpdateTask, onEditTask, searchInputRef }: Props) {
   const [search, setSearch] = useState('');
   const [ownerFilter, setOwnerFilter] = useState<string>('All');
   const [statusFilter, setStatusFilter] = useState<string>('All');
@@ -190,6 +192,11 @@ export default function TaskBoard({ tasks, members, onUpdateTask, searchInputRef
                 </TableCell>
                 <TableCell>
                   <Stack direction="row" spacing={0.25}>
+                    <Tooltip title="Edit task">
+                      <IconButton size="small" onClick={() => onEditTask(t)}>
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
                     <Tooltip title="Start">
                       <IconButton size="small" onClick={() => setStatus(t, 'In Progress')}>
                         <PlayArrowIcon fontSize="small" sx={{ color: STATUS_COLORS['In Progress'] }} />

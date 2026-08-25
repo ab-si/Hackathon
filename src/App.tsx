@@ -11,6 +11,7 @@ import PresentationRoot from './components/presentation/PresentationRoot';
 import PresentationOverview from './components/presentation/PresentationOverview';
 import ProjectShowcase from './components/presentation/ProjectShowcase';
 import PresentationSummary from './components/presentation/PresentationSummary';
+import VersionBadge from './components/VersionBadge';
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { status } = useAuth();
@@ -50,6 +51,7 @@ export default function App() {
           </BrowserRouter>
         </AuthGate>
       </AuthProvider>
+      <VersionBadge />
     </ThemeProvider>
   );
 }
