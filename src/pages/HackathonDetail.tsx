@@ -21,7 +21,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DownloadIcon from '@mui/icons-material/Download';
 import AddIcon from '@mui/icons-material/Add';
 import { useHackathonData } from '../hooks/useHackathonData';
-import type { Hackathon, Priority } from '../types';
+import type { Hackathon, Priority, Task } from '../types';
 import Header from '../components/Header';
 import TeamMembers from '../components/TeamMembers';
 import Timeline from '../components/Timeline';
@@ -38,32 +38,47 @@ const cardSx = {
   height: '100%',
 };
 
-interface AddTaskDialogProps {
+type TaskFormData = { title: string; primaryOwner: string; secondaryOwners: string[]; priority: Priority };
+
+interface TaskFormDialogProps {
   open: boolean;
+  mode: 'create' | 'edit';
   participants: Hackathon['participants'];
+  initialValue?: Task;
   onClose: () => void;
-  onAdd: (data: { title: string; primaryOwner: string; secondaryOwners: string[]; priority: Priority }) => void;
+  onSubmit: (data: TaskFormData) => void;
 }
 
-function AddTaskDialog({ open, participants, onClose, onAdd }: AddTaskDialogProps) {
+function TaskFormDialog({ open, mode, participants, initialValue, onClose, onSubmit }: TaskFormDialogProps) {
   const [title, setTitle] = useState('');
   const [primaryOwner, setPrimaryOwner] = useState('');
   const [secondaryOwners, setSecondaryOwners] = useState<string[]>([]);
   const [priority, setPriority] = useState<Priority>('Medium');
 
+  useEffect(() => {
+    if (!open) return;
+    if (mode === 'edit' && initialValue) {
+      setTitle(initialValue.title);
+      setPrimaryOwner(initialValue.primaryOwner);
+      setSecondaryOwners(initialValue.secondaryOwners);
+      setPriority(initialValue.priority);
+    } else {
+      setTitle('');
+      setPrimaryOwner('');
+      setSecondaryOwners([]);
+      setPriority('Medium');
+    }
+  }, [open, mode, initialValue]);
+
   const submit = () => {
     if (!title.trim()) return;
-    onAdd({ title: title.trim(), primaryOwner, secondaryOwners, priority });
-    setTitle('');
-    setPrimaryOwner('');
-    setSecondaryOwners([]);
-    setPriority('Medium');
+    onSubmit({ title: title.trim(), primaryOwner, secondaryOwners, priority });
     onClose();
   };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>Add Task</DialogTitle>
+      <DialogTitle>{mode === 'edit' ? 'Edit Task' : 'Add Task'}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           <TextField
@@ -131,7 +146,7 @@ function AddTaskDialog({ open, participants, onClose, onAdd }: AddTaskDialogProp
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
         <Button variant="contained" onClick={submit} disabled={!title.trim()}>
-          Add
+          {mode === 'edit' ? 'Save' : 'Add'}
         </Button>
       </DialogActions>
     </Dialog>
@@ -149,6 +164,7 @@ export default function HackathonDetail({ darkMode, onToggleDarkMode }: Props) {
 
   const [editOpen, setEditOpen] = useState(false);
   const [addTaskOpen, setAddTaskOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [manageProjectsOpen, setManageProjectsOpen] = useState(false);
 
   const {
@@ -264,6 +280,7 @@ export default function HackathonDetail({ darkMode, onToggleDarkMode }: Props) {
               tasks={tasks}
               members={hackathon.participants}
               onUpdateTask={updateTask}
+              onEditTask={setEditingTask}
               searchInputRef={searchInputRef}
             />
           </Paper>
@@ -290,11 +307,23 @@ export default function HackathonDetail({ darkMode, onToggleDarkMode }: Props) {
 
       <Box sx={{ height: 24 }} />
 
-      <AddTaskDialog
+      <TaskFormDialog
         open={addTaskOpen}
+        mode="create"
         participants={hackathon.participants}
         onClose={() => setAddTaskOpen(false)}
-        onAdd={addTask}
+        onSubmit={addTask}
+      />
+
+      <TaskFormDialog
+        open={!!editingTask}
+        mode="edit"
+        participants={hackathon.participants}
+        initialValue={editingTask ?? undefined}
+        onClose={() => setEditingTask(null)}
+        onSubmit={(data) => {
+          if (editingTask) updateTask(editingTask.id, { ...data, updatedAt: Date.now() });
+        }}
       />
 
       <HackathonFormDialog
